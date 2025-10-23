@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -63,8 +66,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* PWA Manifest */}
-        <link rel="manifest" href="/manifest.json" />
         <link
           rel="icon"
           type="image/png"
@@ -81,17 +82,9 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
-        {/* PWA Service Worker */}
-        <script>
-          {`
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/service-worker.js');
-              });
-            }
-          `}
-        </script>
+        <Header />
+        <main className="pt-6">{children}</main>
+        <Footer />
       </body>
     </html>
   );

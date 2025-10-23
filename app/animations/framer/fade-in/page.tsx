@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { FM_FadeIn } from '@/components/FM_FadeIn';
 import CodeBox from '@/components/CodeBox';
 import AnimationCard from '@/components/AnimationCard';
@@ -25,11 +26,19 @@ export const FM_FadeIn: React.FC = () => {
 `;
 
 export default function Page() {
+  const [key, setKey] = useState(0);
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-white">Fade-in Section (Framer Motion)</h1>
-      <AnimationCard title="Animation Preview">
-        <FM_FadeIn />
+    <div className="container mx-auto p-6 pt-0 space-y-6">
+      <h1 className="text-3xl font-bold text-white mb-4">
+        Fade-in Section (Framer Motion)
+      </h1>
+
+      <AnimationCard title="Framer Motion Animation Preview: Fade-in" onRunAgain={() => setKey((k) => k + 1)}>
+        {/* 👇 re-renders animation when key changes */}
+        <div key={key}>
+          <FM_FadeIn />
+        </div>
       </AnimationCard>
 
       <AnimationCard title="Code Snippet">
@@ -38,10 +47,10 @@ export default function Page() {
 
       <AnimationCard title="Explanation">
         <ul className="list-disc list-inside text-gray-300">
-          <li><strong>initial:</strong> The starting state of the animation (opacity 0, y offset 8px).</li>
-          <li><strong>animate:</strong> The end state (opacity 1, y 0).</li>
-          <li><strong>transition:</strong> Duration and easing of the animation.</li>
-          <li>The motion.section wraps the content and applies the animation.</li>
+          <li><strong>initial:</strong> Starting state (opacity 0, y 8px).</li>
+          <li><strong>animate:</strong> End state (opacity 1, y 0).</li>
+          <li><strong>transition:</strong> Controls duration and easing.</li>
+          <li><strong>motion.section:</strong> Wraps the element to animate on mount.</li>
         </ul>
       </AnimationCard>
     </div>
