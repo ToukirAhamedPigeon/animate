@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import AnimationCard from '@/components/AnimationCard';
@@ -9,32 +9,50 @@ import CodeBox from '@/components/CodeBox';
 gsap.registerPlugin(ScrollTrigger);
 
 // --- ScrollReveal Item Component ---
-const GSAP_ScrollReveal = ({ children }: { children: React.ReactNode }) => {
+const GSAP_ScrollReveal = ({
+  children,
+  keyProp,
+}: {
+  children: React.ReactNode;
+  keyProp?: number;
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    // select all elements with .reveal class
-    const revealElements = gsap.utils.toArray<HTMLElement>('.reveal');
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Select all items with class "reveal" inside this container
+    const revealElements = gsap.utils.toArray<HTMLElement>('.reveal', container);
+
+    const triggers: ScrollTrigger[] = [];
 
     revealElements.forEach((el) => {
-      gsap.from(el, {
-        y: 60,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: el,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-      });
+      const tl = gsap.fromTo(
+        el,
+        { y: 60, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
+          },
+        }
+      );
+      triggers.push(tl.scrollTrigger!);
     });
 
-    // cleanup
     return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      triggers.forEach((t) => t.kill());
+      ScrollTrigger.refresh();
     };
-  }, []);
+  }, [keyProp]); // Re-run effect when keyProp changes
 
-  return <>{children}</>;
+  return <div ref={containerRef}>{children}</div>;
 };
 
 // --- Full Page ---
@@ -42,44 +60,50 @@ export default function Page() {
   const [key, setKey] = useState(0);
 
   const codeSnippet = `
-// GSAP ScrollTrigger Reveal
-import { useEffect } from "react";
+// GSAP ScrollTrigger Reveal Example
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 export const GSAP_ScrollReveal = () => {
+  const containerRef = useRef(null);
   useEffect(() => {
-    gsap.utils.toArray(".reveal").forEach((el) => {
-      gsap.from(el, {
+    const container = containerRef.current;
+    const revealElements = gsap.utils.toArray(".reveal", container);
+    const triggers = [];
+    revealElements.forEach(el => {
+      triggers.push(gsap.from(el, {
         y: 60,
         opacity: 0,
         duration: 0.8,
         scrollTrigger: {
           trigger: el,
           start: "top 80%",
-          toggleActions: "play none none reverse",
-        },
-      });
+          toggleActions: "play none none reverse"
+        }
+      }).scrollTrigger);
     });
+    return () => triggers.forEach(t => t.kill());
   }, []);
-  return <div className="reveal h-48 bg-white rounded-xl p-6 shadow-lg">Scroll me</div>;
+  return <div ref={containerRef}>{/* ...reveal items */}</div>;
 };
 `;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Title */}
-      <h1 className="text-3xl font-bold text-white mb-4">
+      <h1 className="text-3xl font-bold text-gray-900 mb-4">
         GSAP ScrollTrigger Reveal
       </h1>
 
       {/* Animation Preview */}
       <AnimationCard
         title="GSAP Animation Preview: ScrollTrigger Reveal"
-        // onRunAgain={() => setKey((k) => k + 1)}
+        onRunAgain={() => setKey((k) => k + 1)} // Increment key to remount GSAP_ScrollReveal
       >
-        <GSAP_ScrollReveal key={key}>
+        {/* Use key to force remount children */}
+        <GSAP_ScrollReveal keyProp={key}>
           <div className="space-y-64">
             <div className="h-64 flex items-center justify-center text-gray-400">
               <p>Scroll down to see the reveal animation ↓</p>
@@ -108,22 +132,13 @@ export const GSAP_ScrollReveal = () => {
 
       {/* Explanation */}
       <AnimationCard title="Explanation">
-        <ul className="list-disc list-inside text-gray-300 space-y-2">
-          <li>
-            <strong>ScrollTrigger:</strong> Ties animation to scroll position.
-          </li>
-          <li>
-            <strong>start:</strong> Animation triggers when element top hits 80% of viewport.
-          </li>
-          <li>
-            <strong>toggleActions:</strong> Play on enter, reverse on leave.
-          </li>
-          <li>
-            <strong>gsap.from:</strong> Animates from <code>opacity 0</code> and <code>y 60</code> to default.
-          </li>
-          <li>
-            Multiple elements: Add <code>className="reveal"</code> to each element.
-          </li>
+        <ul className="list-disc list-inside text-gray-700 space-y-2">
+          <li><strong>ScrollTrigger:</strong> Ties animation to scroll position.</li>
+          <li><strong>start:</strong> Animation triggers when element top hits 80% of viewport.</li>
+          <li><strong>toggleActions:</strong> Play on enter, reverse on leave.</li>
+          <li><strong>gsap.from:</strong> Animates from <code>opacity 0</code> and <code>y 60</code> to default.</li>
+          <li>Multiple elements: Add <code>className="reveal"</code> to each element.</li>
+          <li>Click "Run Again" to rerun animations dynamically.</li>
         </ul>
       </AnimationCard>
     </div>

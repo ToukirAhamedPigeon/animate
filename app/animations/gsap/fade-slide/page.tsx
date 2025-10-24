@@ -14,12 +14,15 @@ const GSAP_Fade = ({ triggerKey }: { triggerKey: number }) => {
 
     const elements = Array.from(ref.current.children) as HTMLElement[];
 
-    // Kill any previous animation
-    gsap.killTweensOf(elements);
+    // Reset elements to initial state
+    elements.forEach((el) => {
+      gsap.set(el, { opacity: 0, y: 20 });
+    });
 
-    gsap.from(elements, {
-      opacity: 0,
-      y: 20,
+    // Animate
+    gsap.to(elements, {
+      opacity: 1,
+      y: 0,
       stagger: 0.15,
       duration: 0.6,
       ease: 'power2.out',
@@ -30,6 +33,7 @@ const GSAP_Fade = ({ triggerKey }: { triggerKey: number }) => {
     <div
       ref={ref}
       className="p-8 bg-white rounded-xl text-gray-800 shadow-lg space-y-2"
+      key={triggerKey} // ensures React remounts on key change
     >
       <h2 className="text-xl font-semibold">Fade + Slide In</h2>
       <p>This box fades in while sliding up.</p>
@@ -54,11 +58,13 @@ export const GSAP_Fade = ({ triggerKey }) => {
     if (!ref.current) return;
     const elements = Array.from(ref.current.children);
 
-    gsap.killTweensOf(elements);
+    // Reset initial state
+    elements.forEach(el => gsap.set(el, { opacity: 0, y: 20 }));
 
-    gsap.from(elements, {
-      opacity: 0,
-      y: 20,
+    // Animate
+    gsap.to(elements, {
+      opacity: 1,
+      y: 0,
       stagger: 0.15,
       duration: 0.6,
       ease: 'power2.out',
@@ -66,7 +72,7 @@ export const GSAP_Fade = ({ triggerKey }) => {
   }, [triggerKey]);
 
   return (
-    <div ref={ref} className="p-8 bg-white rounded-xl shadow-lg space-y-2">
+    <div ref={ref} key={triggerKey}>
       <h2>Fade + Slide In</h2>
       <p>This box fades in while sliding up.</p>
       <p>Children appear sequentially thanks to the stagger.</p>
@@ -78,7 +84,7 @@ export const GSAP_Fade = ({ triggerKey }) => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Title */}
-      <h1 className="text-3xl font-bold text-white mb-4">
+      <h1 className="text-3xl font-bold text-gray-900 mb-4">
         GSAP Fade + Slide In
       </h1>
 
@@ -97,9 +103,12 @@ export const GSAP_Fade = ({ triggerKey }) => {
 
       {/* Explanation */}
       <AnimationCard title="Explanation">
-        <ul className="list-disc list-inside text-gray-300">
+        <ul className="list-disc list-inside text-gray-700">
           <li>
-            <strong>gsap.from:</strong> Animates from <code>opacity 0</code> and <code>y=20</code>.
+            <strong>gsap.to:</strong> Animates elements from initial state to final state.
+          </li>
+          <li>
+            <strong>Reset state:</strong> Ensures animation works on multiple runs.
           </li>
           <li>
             <strong>stagger:</strong> Children animate sequentially.
@@ -108,7 +117,7 @@ export const GSAP_Fade = ({ triggerKey }) => {
             <strong>ease:</strong> Smooth easing using <code>power2.out</code>.
           </li>
           <li>
-            <strong>triggerKey prop:</strong> Re-runs animation on "Run Again".
+            <strong>triggerKey prop:</strong> Re-runs animation when "Run Again" is clicked.
           </li>
         </ul>
       </AnimationCard>
